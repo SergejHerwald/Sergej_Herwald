@@ -11,12 +11,10 @@ public class PhilosopherExperiment {
     static IPhilosopher[] philosophers = new Philosopher[PHILOSOPHER_NUM];
 
     public static void main(final String[] args) throws InterruptedException {
-        final var table = new ReentrantLock();
-        final var condition = table.newCondition();
+        final var table = new ReentrantLock();     
         for (var i = 0; i < PHILOSOPHER_NUM; i++) {
             philosophers[i] = new Philosopher();
             philosophers[i].setTable(table);
-            ((Philosopher)philosophers[i]).setCondition(condition);
             philosophers[i].setSeat(i);
         }
         philosophers[0].setLeft(philosophers[PHILOSOPHER_NUM - 1]);

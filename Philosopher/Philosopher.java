@@ -35,23 +35,21 @@ public class Philosopher extends Thread implements IPhilosopher {
 	@Override
 	public void setTable(final Lock table) {
 		this.table = table;
-	}
-
-	public void setCondition(final Condition condition) {
+		final var condition = table.newCondition();
 		this.noSticks = condition;
 	}
-
+	
+	// termination of Thread's work
 	@Override
 	public void stopPhilosopher() {
-		System.out.println(getName() + " stopping");
+		System.out.println("Philosopher-" + this.seat + ": stopping");
 		this.stop = true;
 		interrupt();
 	}
 
-	// --------------------------------------------------------
 	@Override
 	public void run() {
-		System.out.println(getName() + " running");
+		System.out.println("Philosopher-" + this.seat + ": running");
 		try {
 			while (!this.stop) {
 				think();
@@ -59,7 +57,7 @@ public class Philosopher extends Thread implements IPhilosopher {
 			}
 		} catch (InterruptedException e) {
 		}
-		System.out.println(Thread.currentThread().getName() + " stopped; eaten=" + this.eaten);
+		System.out.println("Philosopher-" + this.seat + ": stopped; eaten=" + this.eaten);
 	}
 
 	private void think() throws InterruptedException {
@@ -67,21 +65,25 @@ public class Philosopher extends Thread implements IPhilosopher {
 	}
 
 	private void eat() throws InterruptedException {
-		System.out.println(Thread.currentThread().getName() + " try taking sticks");
+		System.out.println("Philosopher-" + this.seat + ": try taking sticks");
 		table.lock();
 		try {
+			// checks if his neighbors are eating
 			while (left.eating && right.eating) {
 				noSticks.await();
 			}
-			eating = true;
-			System.out.println(Thread.currentThread().getName() + " sticks acquired ");
+			// is eating
+			eating = true;		
+			System.out.println("Philosopher-" + this.seat + ": sticks acquired ");
 			Thread.sleep(this.random.nextInt(PhilosopherExperiment.MAX_TAKING_TIME_MS));
-			System.out.println(Thread.currentThread().getName() + " eating");
-			this.eaten++;
+			System.out.println("Philosopher-" + this.seat + ": eating");	
+			this.eaten++;		
 			Thread.sleep(PhilosopherExperiment.MAX_EATING_DURATION_MS);
+			
+			// the meal is over
 			eating = false;
-			noSticks.signalAll();
-			System.out.println(Thread.currentThread().getName() + " sticks released");
+			noSticks.signalAll();		
+			System.out.println("Philosopher-" + this.seat + ": sticks released");
 		} finally {		
 			table.unlock();
 		}

@@ -3,6 +3,7 @@ package io.dama.ffi.parcoord.dining.cond;
 import java.util.Random;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Philosopher extends Thread implements IPhilosopher {
 
@@ -35,10 +36,9 @@ public class Philosopher extends Thread implements IPhilosopher {
 	@Override
 	public void setTable(final Lock table) {
 		this.table = table;
-		final var condition = table.newCondition();
-		this.noSticks = condition;
+		this.noSticks = table.newCondition();;
 	}
-	
+
 	// termination of Thread's work
 	@Override
 	public void stopPhilosopher() {
@@ -52,8 +52,8 @@ public class Philosopher extends Thread implements IPhilosopher {
 		System.out.println("Philosopher-" + this.seat + ": running");
 		try {
 			while (!this.stop) {
-				think();
 				eat();
+				think();
 			}
 		} catch (InterruptedException e) {
 		}
@@ -62,6 +62,7 @@ public class Philosopher extends Thread implements IPhilosopher {
 
 	private void think() throws InterruptedException {
 		Thread.sleep(this.random.nextInt(PhilosopherExperiment.MAX_THINKING_DURATION_MS));
+		System.out.println("Philosopher-" + this.seat + ": thinking");
 	}
 
 	private void eat() throws InterruptedException {
@@ -69,22 +70,29 @@ public class Philosopher extends Thread implements IPhilosopher {
 		table.lock();
 		try {
 			// checks if his neighbors are eating
-			while (left.eating && right.eating) {
+			while (left.eating || right.eating) {
 				noSticks.await();
 			}
-			// is eating
-			eating = true;		
-			System.out.println("Philosopher-" + this.seat + ": sticks acquired ");
-			Thread.sleep(this.random.nextInt(PhilosopherExperiment.MAX_TAKING_TIME_MS));
-			System.out.println("Philosopher-" + this.seat + ": eating");	
-			this.eaten++;		
-			Thread.sleep(PhilosopherExperiment.MAX_EATING_DURATION_MS);
-			
-			// the meal is over
-			eating = false;
-			noSticks.signalAll();		
-			System.out.println("Philosopher-" + this.seat + ": sticks released");
-		} finally {		
+			System.out.println("Philosopher-" + this.seat + ": sticks acquired ");				
+		} finally {
+			table.unlock();
+		}
+
+		// is eating
+		eating = true;
+		Thread.sleep(this.random.nextInt(PhilosopherExperiment.MAX_TAKING_TIME_MS));
+		System.out.println("Philosopher-" + this.seat + ": eating");	
+		Thread.sleep(PhilosopherExperiment.MAX_EATING_DURATION_MS);
+		this.eaten++;
+		
+		// the meal is over
+		System.out.println("Philosopher-" + this.seat + ": sticks released");
+		eating = false;
+		table.lock();
+		try {
+			left.noSticks.signal();
+			right.noSticks.signal();
+		} finally {
 			table.unlock();
 		}
 	}

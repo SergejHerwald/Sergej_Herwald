@@ -80,7 +80,7 @@ public class ThreadsafeSimplifiedList<T> implements SimplifiedList<T> {
 
 	@Override
 	public boolean isEmpty() {
-		writeLock.lock();
+		readLock.lock();
 		try {
 			return this.first == null;
 		} finally {

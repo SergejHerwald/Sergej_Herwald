@@ -30,9 +30,9 @@ public class ThreadsafeSimplifiedList<T> implements SimplifiedList<T> {
 	}
 
 	@Override
-	public T get(final int i) {
-		readLock.lock();
+	public T get(final int i) {	
 		try {
+			readLock.lock();
 			var ptr = this.first;
 			for (var j = 0; j < i; j++) {
 				ptr = ptr.next;
@@ -44,9 +44,9 @@ public class ThreadsafeSimplifiedList<T> implements SimplifiedList<T> {
 	}
 
 	@Override
-	public boolean add(final T e) {
-		writeLock.lock();
+	public boolean add(final T e) {	
 		try {
+			writeLock.lock();
 			if (this.first != null) {
 				var ptr = this.first;
 				while (ptr.next != null) {
@@ -64,9 +64,9 @@ public class ThreadsafeSimplifiedList<T> implements SimplifiedList<T> {
 	}
 
 	@Override
-	public T set(final int i, final T e) {
-		writeLock.lock();
+	public T set(final int i, final T e) {	
 		try {
+			writeLock.lock();
 			var ptr = this.first;
 			for (var j = 0; j < i; j++) {
 				ptr = ptr.next;
@@ -79,9 +79,9 @@ public class ThreadsafeSimplifiedList<T> implements SimplifiedList<T> {
 	}
 
 	@Override
-	public boolean isEmpty() {
-		readLock.lock();
+	public boolean isEmpty() {	
 		try {
+			readLock.lock();
 			return this.first == null;
 		} finally {
 			readLock.unlock();

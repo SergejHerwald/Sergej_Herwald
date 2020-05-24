@@ -9,13 +9,6 @@ public class ThreadsafeSimplifiedList<T> implements SimplifiedList<T> {
 	private final ReadWriteLock lock = new ReentrantReadWriteLock();
 	private final Lock readLock = lock.readLock();
 	private final Lock writeLock = lock.writeLock();
-	/*
-	 * Statt *synchronized* als Schlüsselwort an den Methoden wird hier eine private
-	 * Instanzvariable zum Synchronisieren verwendet, damit niemand von außen an
-	 * derselben Variable einen Lock setzen kann, um Verklemmungen zu vermeiden.
-	 *
-	 */
-	private final Object intrinsicLock;
 	private Node<T> first;
 
 	private class Node<U> {
@@ -33,7 +26,6 @@ public class ThreadsafeSimplifiedList<T> implements SimplifiedList<T> {
 
 	public ThreadsafeSimplifiedList() {
 		super();
-		this.intrinsicLock = new Object();
 		this.first = null;
 	}
 

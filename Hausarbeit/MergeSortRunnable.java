@@ -1,14 +1,21 @@
-package pp2;
+package pp;
 
 import java.util.LinkedList;
-import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class MergeSortRunnable<E extends Comparable<E>> {
+public class MergeSortRunnable<E extends Comparable<E>> extends MergeSortSequenziell<E> {
 
-	private final int THRESHOLD = 1;
-	private final int PROCESSORS = Runtime.getRuntime().availableProcessors();
-	private volatile int counter = 0; // counts the processors used
+	private final int PROCESSORS = Runtime.getRuntime().availableProcessors() - 1;
+	private AtomicInteger counter = new AtomicInteger(0); // count the processors used
 
+	
+	/**
+	 * a method to sort a list of values in ascending order. the data 
+	 * to be sorted must be of the type that implements the Comparable 
+	 * interface.
+	 * @param 	data	LinkedList to be sorted 
+	 * @return 	void	-
+	 */
 	public void mergeSort(LinkedList<E> data) {
 
 		if (data == null)
@@ -17,117 +24,48 @@ public class MergeSortRunnable<E extends Comparable<E>> {
 		mergeSortHelper(data, 0, data.size() - 1);
 	}
 
-	private void mergeSortHelper(LinkedList<E> data, int min, int max) {
+	protected void mergeSortHelper(LinkedList<E> data, int min, int max) {
 
-		if (counter >= PROCESSORS) {
-			mergeSortSequenziell(data, min, max);
-		} else {
+		// if the resources are exhausted continue with sequential sorting...
+		if (counter.get() >= PROCESSORS) {
+			super.mergeSortHelper(data, min, max);
+			
+		} else { // ..otherwise divide the problem
 			int len = max - min + 1;
-			if (len > THRESHOLD) {
-				int middle = min + (max - min) / 2;
+			if (len > 1) {
+				int middle = min + (max - min) / 2; // find the middle of the list
 
 				Thread t1 = new Thread(new Runnable() {
 					@Override
 					public void run() {
-						counter++;
-						mergeSortHelper(data, min, middle);
-						counter--;
+						counter.incrementAndGet();
+						mergeSortHelper(data, min, middle); // sort the left part of the list
+						counter.decrementAndGet();
 					}
 				});
-
+			
 				Thread t2 = new Thread(new Runnable() {
 					@Override
 					public void run() {
-						counter++;
-						mergeSortHelper(data, middle + 1, max);
-						counter--;
+						counter.incrementAndGet();
+						mergeSortHelper(data, middle + 1, max); // sort the right part of the list
+						counter.decrementAndGet();
 					}
 				});
 
-				t1.start();
-				t2.start();
+				t1.start(); // start sorting of the left part
+				t2.start();	// start sorting of the right part 
 
 				try {
-					t1.join();
-					t2.join();
+					t1.join(); // wait until the left part is sorted
+					t2.join(); // wait until the right is sorted
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				merge(data, min, middle, middle + 1, max);
+				
+				merge(data, min, middle, middle + 1, max); // merge the both of parts
 			} else
 				return;
 		}
 	}
-
-	private void mergeSortSequenziell(LinkedList<E> data, int min, int max) {
-		int len = max - min + 1;
-		if (len > THRESHOLD) {
-			int middle = min + (max - min) / 2;
-			mergeSortHelper(data, min, middle);
-			mergeSortHelper(data, middle + 1, max);
-			merge(data, min, middle, middle + 1, max);
-		} else
-			return;
-	}
-
-	private void merge(LinkedList<E> data, int min1, int max1, int min2, int max2) {
-		LinkedList<E> newList = new LinkedList<>();
-		int counter1 = min1, counter2 = min2;
-
-		while (!(counter1 > max1) && !(counter2 > max2)) {
-			if (data.get(counter1).compareTo(data.get(counter2)) < 0)
-				newList.add(data.get(counter1++));
-			else
-				newList.add(data.get(counter2++));
-		}
-
-		if (counter1 > max1)
-			mergeHelper(data, counter2, max2, newList);
-		else
-			mergeHelper(data, counter1, max1, newList);
-
-		while (!(min1 > max2))
-			data.set(min1++, newList.removeFirst());
-	}
-
-	private void mergeHelper(LinkedList<E> data, int counter, int max, LinkedList<E> newList) {
-		while (!(counter > max))
-			newList.add(data.get(counter++));
-	}
-
-	public void printList(LinkedList<E> data) {
-		data.forEach((temp) -> {
-			System.out.println(temp);
-		});
-	}
-
-	public void printListForTest(LinkedList<E> data) {
-		data.forEach((temp) -> {
-			System.out.print(temp);
-		});
-	}
-
-	public static void main(String[] args) {
-
-		final long timeStart = System.currentTimeMillis();
-
-		LinkedList<Integer> list = new LinkedList<>();
-		Random r = new Random();
-		for (int i = 0; i < 4000; i++) {
-			list.add(1 + r.nextInt(1000));
-		}
-		MergeSortRunnable<Integer> ms1 = new MergeSortRunnable<>();
-
-		try {
-			ms1.mergeSort(list);
-			ms1.printList(list);
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		}
-
-		final long timeEnd = System.currentTimeMillis();
-		System.out.println("Verlaufszeit der Schleife: " + (timeEnd - timeStart) + " Millisek.");
-
-	}
-
 }

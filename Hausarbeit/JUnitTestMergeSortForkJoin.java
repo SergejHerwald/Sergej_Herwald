@@ -1,6 +1,7 @@
-package pp2;
+package pp;
 
 import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Collections;
@@ -9,10 +10,10 @@ import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 
-class MergeSortRunnableJUnitTest {
+class JUnitTestMergeSortForkJoin {
 
-	MergeSortRunnable<String> ms1 = new MergeSortRunnable<>();
-	MergeSortRunnable<Integer> ms2 = new MergeSortRunnable<>();
+	MergeSortForkJoin<String> ms1 = new MergeSortForkJoin<>();
+	MergeSortForkJoin<Integer> ms2 = new MergeSortForkJoin<>();
 
 	@Test
 	void freeTypeTest() {
@@ -98,3 +99,4 @@ class MergeSortRunnableJUnitTest {
 	}
 
 }
+

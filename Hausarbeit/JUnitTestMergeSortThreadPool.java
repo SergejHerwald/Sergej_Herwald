@@ -1,6 +1,7 @@
-package pp2;
+package pp;
 
 import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Collections;
@@ -9,10 +10,10 @@ import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 
-class MergeSortSequenziellJUnitTest {
+class JUnitTestMergeSortThreadPool {
 
-	MergeSortSequenziell<String> ms1 = new MergeSortSequenziell<>();
-	MergeSortSequenziell<Integer> ms2 = new MergeSortSequenziell<>();
+	MergeSortThreadPool<String> ms1 = new MergeSortThreadPool<>();
+	MergeSortThreadPool<Integer> ms2 = new MergeSortThreadPool<>();
 
 	@Test
 	void freeTypeTest() {
